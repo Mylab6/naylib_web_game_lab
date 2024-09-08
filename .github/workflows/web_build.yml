@@ -48,7 +48,7 @@ jobs:
         ls
         zip raylib_web_game.zip *.html *.wasm *.js *.data
     - name: Upload HTML5 Build
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: html5-build
         path: raylib_web_game.zip
