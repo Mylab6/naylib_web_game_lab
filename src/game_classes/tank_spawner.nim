@@ -16,19 +16,22 @@
 # - The tank spawner should have a method `set_tank_damage` that sets the damage of the tanks.
 # Start writing the code please 
 import raylib, tank
+import std/logging
 
+var logger = newConsoleLogger()
 type
-    TankSpawner = ref object
-        spawnRate: float
-        position: Vector2
-        color: Color
-        size: Vector2
-        speed: float
-        texture: Texture2D
-        sound: Sound
-        tankType: string
-        tankHealth: int
-        tankDamage: int
+    TankSpawner* = ref object
+        spawnRate*: float
+        position*: Vector3
+        color*: Color
+        size*: Vector3
+        speed*: float
+        texture*: Texture2D
+        sound*: Sound
+        tankType*: string
+        tankHealth*: int
+        tankDamage*: int
+        
 
 proc spawnSpawner(spawner: TankSpawner): Tank =
     var tank: Tank
@@ -46,28 +49,30 @@ proc spawnSpawner(spawner: TankSpawner): Tank =
 
 
 proc updateSpawner(spawner: TankSpawner) =
+    logger.log(lvlInfo, "a log message")
+
     # Update the internal state of the spawner
 
 proc drawSpawner(spawner: TankSpawner) =
     # Draw the spawner
     # The Spawner should just be a cube
-    drawCube(spawner.position, spawner.size.x, spawner.size.y, spawner.size.z, spawner.color)
+    drawCube(spawner.position, spawner.size,  spawner.color)
 
     # Draw a spinning octagon on top of the cube
-    let octagonRadius = spawner.size.x / 2
-    let octagonPosition = Vector2(spawner.position.x, spawner.position.y - spawner.size.y / 2 - octagonRadius)
-    drawPoly(octagonPosition, 8, octagonRadius, 0, spawner.color)
-
+   # let octagonRadius = spawner.size.x / 2
+   # let octagonPosition = Vector2(spawner.position.x, spawner.position.y - spawner.size.y / 2 - octagonRadius)
+    #drawPoly(octagonPosition, 8, octagonRadius, 0, spawner.color)
+    
 proc setSpawnRate(spawner: TankSpawner, rate: float) =
     spawner.spawnRate = rate
 
-proc setPosition(spawner: TankSpawner, position: Vector2) =
+proc setPosition(spawner: TankSpawner, position: Vector3) =
     spawner.position = position
 
 proc setColor(spawner: TankSpawner, color: Color) =
     spawner.color = color
 
-proc setSize(spawner: TankSpawner, size: Vector2) =
+proc setSize(spawner: TankSpawner, size: Vector3) =
     spawner.size = size
 
 proc setSpeed(spawner: TankSpawner, speed: float) =
