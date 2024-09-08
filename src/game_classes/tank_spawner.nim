@@ -15,7 +15,7 @@
 # - The tank spawner should have a method `set_tank_health` that sets the health of the tanks.
 # - The tank spawner should have a method `set_tank_damage` that sets the damage of the tanks.
 # Start writing the code please 
-import raylib, tank
+import raylib, tank , basegameobject
 import std/logging
 
 var logger = newConsoleLogger()

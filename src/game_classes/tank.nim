@@ -1,7 +1,7 @@
-import raylib
+import raylib , basegameobject
 
 type
-    Tank* = object
+    Tank* = ref object
         position*: Vector3
         color*: Color
         size*: Vector3
