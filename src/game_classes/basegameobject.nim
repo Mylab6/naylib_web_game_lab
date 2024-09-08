@@ -1,4 +1,4 @@
-import raylib
+import raylib 
 
 type
   BaseGameObject* = ref object of RootObj
@@ -10,6 +10,7 @@ type
     objectType*: string
     deltaTime*: float
     children*: seq[BaseGameObject]
+
 
 proc newBaseGameObject*(
   position: Vector3 = Vector3(x: 0, y: 0, z: 0),
@@ -28,6 +29,7 @@ proc newBaseGameObject*(
     objectType: objectType,
     children: @[]
   )
+
 proc update(gameObject: BaseGameObject,newTime :float) =
   gameObject.deltaTime = newTime
   for child in gameObject.children:
@@ -37,4 +39,5 @@ proc addChild*(parent: BaseGameObject, child: BaseGameObject) =
 
 proc removeChild*(parent: BaseGameObject, child: BaseGameObject) =
   parent.children.delete(parent.children.find(child))
+
 

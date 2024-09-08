@@ -32,6 +32,7 @@ import raylib, screens, std/lenientops, game_classes/tank_spawner
 var
   framesCounter: int32 = 0
   finishScreen: int32 = 0
+  camera* {.global.}: Camera
 
 # ----------------------------------------------------------------------------------------
 # Gameplay Screen Functions Definition
@@ -56,8 +57,7 @@ proc drawGameplayScreen* =
   # TODO: Draw GAMEPLAY screen here!
   drawRectangle(0, 0, getScreenWidth(), getScreenHeight(), Purple)
   drawText(font, "GAMEPLAY SCREEN", Vector2(x: 20, y: 10), font.baseSize*3'f32, 4, Maroon)
-  var camera: Camera
-  # Init the camera pleas e
+  # Init the camera please
   camera.position = Vector3(x: 10.0, y: 10.0, z: 10.0)
   camera.target = Vector3(x: 0.0, y: 2.0, z: 0.0)
   camera.up = Vector3(x: 0.0, y: 1.0, z: 0.0)
@@ -68,13 +68,13 @@ proc drawGameplayScreen* =
   #Add a spawner 
   var spawner =  TankSpawner()
   spawner.position = Vector3(x: 0, y: 0, z: 0)
-  spawner.color = Red
-  spawner.size = Vector3(x: 2, y: 2, z: 2)
+  spawner.color = Blue
+  spawner.size = Vector3(x: 3, y: 3, z: 3)
   spawner.speed = 1.0
 
-  spawner.drawSpawner()
-  drawCube(Vector3(x: 0, y: 1, z: 0), 2.0, 2.0, 2.0, Red)
-  drawCubeWires(Vector3(x: 0, y: 1, z: 0), 2.0, 2.0, 2.0, Maroon)
+  spawner.drawSpawner(camera)
+  #drawCube(Vector3(x: 0, y: 1, z: 0), 2.0, 2.0, 2.0, Red)
+  #drawCubeWires(Vector3(x: 0, y: 1, z: 0), 2.0, 2.0, 2.0, Maroon)
   drawGrid(10, 1.0)
   endMode3D()
   drawText("PRESS ENTER or TAP to JUMP to ENDING SCREEN", 130, 220, 20, Maroon)
@@ -87,3 +87,4 @@ proc unloadGameplayScreen* =
 proc finishGameplayScreen*: int32 =
   # Gameplay Screen should finish?
   return finishScreen
+
