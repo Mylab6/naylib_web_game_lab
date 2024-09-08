@@ -47,7 +47,7 @@ when defined(android):
 elif defined(emscripten):
   --define:GraphicsApiOpenGlEs2
   --define:NaylibWebResources
-  switch("define", "NaylibWebResourcesPath=/resources")
+  switch("define", "NaylibWebResourcesPath=src/resources")
   --os:linux
   --cpu:wasm32
   --cc:clang

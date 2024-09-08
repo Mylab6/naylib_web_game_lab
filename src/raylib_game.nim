@@ -13,7 +13,7 @@
 # ****************************************************************************************
 
 import
-  raylib, screens, screen_logo, screen_title, screen_options, screen_gameplay, screen_ending
+  raylib, screens, screen_logo, screen_title, screen_options, screen_gameplay, screen_ending , gamestate
 
 # ----------------------------------------------------------------------------------------
 # Local Variables Definition (local to this module)
@@ -32,6 +32,7 @@ var
   transFromScreen: GameScreen = Unknown
   transToScreen: GameScreen = Unknown
   lastTime: float32 = 0
+  localGameState: GameState
 
 # ----------------------------------------------------------------------------------------
 # Module specific Functions Definition
@@ -176,7 +177,7 @@ proc updateDrawFrame {.cdecl.} =
   of Options:
     drawOptionsScreen()
   of Gameplay:
-    drawGameplayScreen(deltaTime)
+    drawGameplayScreen(deltaTime,localGameState)
   of Ending:
     drawEndingScreen()
   else:
@@ -198,9 +199,9 @@ proc main =
   initAudioDevice() # Initialize audio device
   try:
     # Load global data (assets that must be available in all screens, i.e. font)
-    font = loadFont("resources/mecha.png")
-    music = loadMusicStream("resources/ambient.ogg")
-    fxCoin = loadSound("resources/coin.wav")
+    font = loadFont("src/resources/mecha.png")
+    music = loadMusicStream("src/resources/ambient.ogg")
+    fxCoin = loadSound("src/resources/coin.wav")
     setMusicVolume(music, 1)
     playMusicStream(music)
     # Setup and init first screen

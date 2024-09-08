@@ -1,4 +1,4 @@
-import raylib
+import raylib , raymath, std/math
 import os
 
 
@@ -51,7 +51,7 @@ proc removeChild*(parent: BaseGameObject, child: BaseGameObject) =
   parent.children.delete(parent.children.find(child))
 
 proc loadModel*(gameObject: BaseGameObject, modelName: string) =
-  let resourcePath = joinPath("resources", "models", modelName)
+  let resourcePath = joinPath("src/resources", "models", modelName)
   gameObject.model = loadModel(resourcePath)
   gameObject.renderMode = Model
 
