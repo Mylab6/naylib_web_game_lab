@@ -23,7 +23,7 @@
 #
 # ****************************************************************************************
 
-import raylib, screens, std/lenientops
+import raylib, screens, std/lenientops, game_classes/tank_spawner
 
 # ----------------------------------------------------------------------------------------
 # Module Variables Definition (local)
@@ -56,6 +56,26 @@ proc drawGameplayScreen* =
   # TODO: Draw GAMEPLAY screen here!
   drawRectangle(0, 0, getScreenWidth(), getScreenHeight(), Purple)
   drawText(font, "GAMEPLAY SCREEN", Vector2(x: 20, y: 10), font.baseSize*3'f32, 4, Maroon)
+  var camera: Camera
+  # Init the camera pleas e
+  camera.position = Vector3(x: 10.0, y: 10.0, z: 10.0)
+  camera.target = Vector3(x: 0.0, y: 2.0, z: 0.0)
+  camera.up = Vector3(x: 0.0, y: 1.0, z: 0.0)
+  camera.fovy = 45.0
+  camera.projection = CameraProjection.Perspective
+
+  beginMode3D(camera)
+  #Add a spawner 
+  var spawner: TankSpawner
+  spawner.position = Vector2(x: 0, y: 0)
+  spawner.color = Red
+  spawner.size = Vector2(x: 2, y: 2)
+  spawner.speed = 1.0
+  
+  drawCube(Vector3(x: 0, y: 1, z: 0), 2.0, 2.0, 2.0, Red)
+  drawCubeWires(Vector3(x: 0, y: 1, z: 0), 2.0, 2.0, 2.0, Maroon)
+  drawGrid(10, 1.0)
+  endMode3D()
   drawText("PRESS ENTER or TAP to JUMP to ENDING SCREEN", 130, 220, 20, Maroon)
 
 proc unloadGameplayScreen* =
