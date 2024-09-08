@@ -45,13 +45,13 @@ jobs:
         nimble -d:emscripten build
     - name: Package Web Build into Zip
       run: |
-        ls
+        cd public
         zip raylib_web_game.zip *.html *.wasm *.js *.data
     - name: Upload HTML5 Build
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: html5-build
-        path: raylib_web_game.zip
+        path: public/raylib_web_game.zip
     - name: Install Butler
       run: |
         curl -L -o butler.zip https://broth.itch.ovh/butler/linux-amd64/LATEST/archive/default
@@ -63,6 +63,6 @@ jobs:
       env:
         BUTLER_API_KEY: ${{ secrets.BUTLER }}
     - name: Push HTML5 build to Itch.io
-      run: butler push raylib_web_game.zip ${{ secrets.ITCH_URL }}:html5
+      run: butler push public/raylib_web_game.zip ${{ secrets.ITCH_URL }}:html5
       env:
         BUTLER_API_KEY: ${{ secrets.BUTLER }}
