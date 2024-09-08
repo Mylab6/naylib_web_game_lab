@@ -18,6 +18,7 @@ elif detectOs(Ubuntu):
 # Tasks
 
 # mode = ScriptMode.Verbose
+bin = @["raylib_game"]
 
 include "build_android.nims"
 include "setup_build_env.nims"

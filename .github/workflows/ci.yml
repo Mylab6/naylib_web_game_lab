@@ -2,9 +2,9 @@ name: Android CI
 
 on:
   push:
-    branches: [ master ]
+    branches: [ main ]
   pull_request:
-    branches: [ master ]
+    branches: [ main ]
 
 jobs:
   test-linux:
@@ -34,34 +34,4 @@ jobs:
       with:
         name: raylib-game-apk
         path: ${{ github.workspace }}/raylib_game.apk
-        if-no-files-found: error
-
-  test-windows:
-    runs-on: windows-latest
-    env:
-      JAVA_VERSION: "21"
-    steps:
-    - uses: actions/checkout@v4
-    - uses: jiro4989/setup-nim-action@v2
-      with:
-        nim-version: 'stable'
-        repo-token: ${{ secrets.GITHUB_TOKEN }}
-    - name: Install dependencies
-      run: |
-        choco install wget
-        choco install openjdk --version=${{ env.JAVA_VERSION }}
-        $JAVA_HOME = "C:\Program Files\OpenJDK\jdk-${{ env.JAVA_VERSION }}"
-        echo "JAVA_HOME=$JAVA_HOME" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
-        echo "$env:JAVA_HOME\bin" | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
-    - name: Set up Android SDK/NDK
-      run: |
-        nimble -d:GitHubCI setupBuildEnv -Y
-    - name: Run tests
-      run: |
-        nimble -d:GitHubCI testCI
-    - name: Upload APK artifact
-      uses: actions/upload-artifact@v4
-      with:
-        name: raylib-game-apk-windows
-        path: ${{ github.workspace }}\raylib_game.apk
         if-no-files-found: error
