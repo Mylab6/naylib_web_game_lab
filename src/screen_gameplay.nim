@@ -23,7 +23,7 @@
 #
 # ****************************************************************************************
 
-import raylib, screens, std/lenientops, game_classes/tank_spawner
+import raylib, screens, std/lenientops, game_classes/tank_spawner , game_classes/basegameobject
 
 # ----------------------------------------------------------------------------------------
 # Module Variables Definition (local)
@@ -52,11 +52,11 @@ proc updateGameplayScreen* =
     finishScreen = 1
     playSound(fxCoin)
 
-proc drawGameplayScreen* =
+proc drawGameplayScreen*(deltaTime:float) =
   # Gameplay Screen Draw logic
   # TODO: Draw GAMEPLAY screen here!
   drawRectangle(0, 0, getScreenWidth(), getScreenHeight(), Purple)
-  drawText(font, "GAMEPLAY SCREEN", Vector2(x: 20, y: 10), font.baseSize*3'f32, 4, Maroon)
+  drawText(font, "GAMEPLAY SCREEN", Vector2(x: 20, y: 10), font.baseSize*3'f32, 4, Green)
   # Init the camera please
   camera.position = Vector3(x: 10.0, y: 10.0, z: 10.0)
   camera.target = Vector3(x: 0.0, y: 2.0, z: 0.0)
@@ -66,13 +66,17 @@ proc drawGameplayScreen* =
 
   beginMode3D(camera)
   #Add a spawner 
-  var spawner =  TankSpawner()
-  spawner.position = Vector3(x: 0, y: 0, z: 0)
-  spawner.color = Blue
-  spawner.size = Vector3(x: 3, y: 3, z: 3)
-  spawner.speed = 1.0
-
-  spawner.drawSpawner(camera)
+  var testGameObject =  BaseGameObject()
+  testGameObject.position = Vector3(x: 0, y: 0, z: 0)
+  testGameObject.color = Blue
+  testGameObject.scale = Vector3(x: 2.0, y: 2.0, z: 2.0)
+  testGameObject.renderMode = RenderMode.Model
+  #testGameObject.size = Vector3(x: 3, y: 3, z: 3)
+  #testGameObject.speed = 1.0
+  testGameObject.loadModel("animal-bison.obj")
+  testGameObject.drawGameObject(camera,deltaTime)
+  #testGameObject.rotateGameObject(Vector3(x: 1, y: 0, z: 0), 0.01)
+  #spawner.drawSpawner(camera)
   #drawCube(Vector3(x: 0, y: 1, z: 0), 2.0, 2.0, 2.0, Red)
   #drawCubeWires(Vector3(x: 0, y: 1, z: 0), 2.0, 2.0, 2.0, Maroon)
   drawGrid(10, 1.0)

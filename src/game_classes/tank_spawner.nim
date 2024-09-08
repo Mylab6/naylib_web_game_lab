@@ -51,42 +51,9 @@ proc updateSpawner(spawner: TankSpawner) =
 
     # Update the internal state of the spawner
 
-proc drawSpawner*(spawner: TankSpawner, camera: Camera3D) =
-  # Draw the spawner base cube
-  drawCube(spawner.position, spawner.size, spawner.color)
+proc drawSpawner*(spawner: TankSpawner, camera: Camera3D, newTime: float) =  # Draw the spawner base cube
+    logger.log(lvlInfo,"test")
 
-  # Calculate the radius of the largest octagon
-  let baseRadius = min(spawner.size.x, spawner.size.z) / 2
-  let octagonHeight = spawner.size.y / 4  # Height of each octagon layer
-
-  # Draw three rotating octagons
-  for i in 0..2:
-    let radius = baseRadius * (1 - 0.2 * float(i))  # Decrease size for each layer
-    let yOffset = spawner.size.y / 2 + octagonHeight * (float(i) + 0.5)
-    let rotation = float(spawner.deltaTime * 1000) * (1 + float(i) * 0.5)  # Rotate each layer at different speeds
-
-    # Calculate the center position of the octagon
-    let center = Vector3(
-      x: spawner.position.x,
-      y: spawner.position.y + yOffset,
-      z: spawner.position.z
-    )
-
-    # Draw the 3D octagon
-    for j in 0..7:
-      let angle1 = rotation + float(j) * (2 * PI / 8)
-      let angle2 = rotation + float(j + 1) * (2 * PI / 8)
-      let p1 = Vector3(
-        x: center.x + radius * cos(angle1),
-        y: center.y,
-        z: center.z + radius * sin(angle1)
-      )
-      let p2 = Vector3(
-        x: center.x + radius * cos(angle2),
-        y: center.y,
-        z: center.z + radius * sin(angle2)
-      )
-      drawLine3D(p1, p2, Red)
 proc setSpawnRate(spawner: TankSpawner, rate: float) =
     spawner.spawnRate = rate
 
@@ -116,5 +83,6 @@ proc setTankHealth(spawner: TankSpawner, health: int) =
 
 proc setTankDamage(spawner: TankSpawner, damage: int) =
     spawner.tankDamage = damage
+
 
 

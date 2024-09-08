@@ -31,6 +31,7 @@ var
   transFadeOut: bool = false
   transFromScreen: GameScreen = Unknown
   transToScreen: GameScreen = Unknown
+  lastTime: float32 = 0
 
 # ----------------------------------------------------------------------------------------
 # Module specific Functions Definition
@@ -121,6 +122,13 @@ proc drawTransition =
   drawRectangle(0, 0, getScreenWidth(), getScreenHeight(), fade(Black, transAlpha))
 
 proc updateDrawFrame {.cdecl.} =
+  let currentTime = getTime()
+  let deltaTime = currentTime - lastTime
+  lastTime = currentTime
+
+    # Update your tank spawner
+
+    # Rest of your game loop...
   # Update and draw game frame
   # Update
   # --------------------------------------------------------------------------------------
@@ -168,7 +176,7 @@ proc updateDrawFrame {.cdecl.} =
   of Options:
     drawOptionsScreen()
   of Gameplay:
-    drawGameplayScreen()
+    drawGameplayScreen(deltaTime)
   of Ending:
     drawEndingScreen()
   else:
