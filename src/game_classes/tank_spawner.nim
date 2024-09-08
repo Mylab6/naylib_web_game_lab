@@ -53,7 +53,7 @@ proc updateSpawner(spawner: TankSpawner) =
 
     # Update the internal state of the spawner
 
-proc drawSpawner(spawner: TankSpawner) =
+proc drawSpawner*(spawner: TankSpawner) =
     # Draw the spawner
     # The Spawner should just be a cube
     drawCube(spawner.position, spawner.size,  spawner.color)

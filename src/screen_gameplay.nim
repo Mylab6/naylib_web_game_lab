@@ -66,12 +66,13 @@ proc drawGameplayScreen* =
 
   beginMode3D(camera)
   #Add a spawner 
-  var spawner: TankSpawner
+  var spawner =  TankSpawner()
   spawner.position = Vector3(x: 0, y: 0, z: 0)
   spawner.color = Red
   spawner.size = Vector3(x: 2, y: 2, z: 2)
   spawner.speed = 1.0
-  
+
+  spawner.drawSpawner()
   drawCube(Vector3(x: 0, y: 1, z: 0), 2.0, 2.0, 2.0, Red)
   drawCubeWires(Vector3(x: 0, y: 1, z: 0), 2.0, 2.0, 2.0, Maroon)
   drawGrid(10, 1.0)
