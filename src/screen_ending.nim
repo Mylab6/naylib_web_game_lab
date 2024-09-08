@@ -24,6 +24,9 @@
 # ****************************************************************************************
 
 import raylib, screens, std/lenientops
+import std/logging
+
+var logger = newConsoleLogger()
 
 # ----------------------------------------------------------------------------------------
 # Module Variables Definition (local)
@@ -50,6 +53,7 @@ proc updateEndingScreen* =
   if isKeyPressed(Enter) or isGestureDetected(Tap):
     finishScreen = 1
     playSound(fxCoin)
+    logger.log(lvlInfo, "Play a sound")
 
 proc drawEndingScreen* =
   # Ending Screen Draw logic

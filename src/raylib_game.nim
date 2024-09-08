@@ -190,11 +190,11 @@ proc main =
   initAudioDevice() # Initialize audio device
   try:
     # Load global data (assets that must be available in all screens, i.e. font)
-    #//font = loadFont("resources/mecha.png")
-    #music = loadMusicStream("resources/ambient.ogg")
-    #fxCoin = loadSound("resources/coin.wav")
-    #setMusicVolume(music, 1)
-    #playMusicStream(music)
+    font = loadFont("resources/mecha.png")
+    music = loadMusicStream("resources/ambient.ogg")
+    fxCoin = loadSound("resources/coin.wav")
+    setMusicVolume(music, 1)
+    playMusicStream(music)
     # Setup and init first screen
     currentScreen = Logo
     initLogoScreen()
