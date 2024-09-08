@@ -1,6 +1,9 @@
-import raylib , raymath, std/math
+import raylib , raymath, std/math, rlgl
 import os
+import std/logging
+import math
 
+var logger = newConsoleLogger()
 
 type
   RenderMode* = enum
@@ -18,6 +21,9 @@ type
     mesh*: Mesh
     model*: Model
     renderMode*: RenderMode
+    rotateSpeed*: float32
+    rotationAngle*: float  # Increase rotation angle (in degrees)
+
 
 proc newBaseGameObject*(
   position: Vector3 = Vector3(x: 0, y: 0, z: 0),
@@ -39,7 +45,7 @@ proc newBaseGameObject*(
     renderMode: renderMode
   )
 
-proc update(gameObject: BaseGameObject, newTime: float) =
+proc update*(gameObject: BaseGameObject, newTime: float) =
   gameObject.deltaTime = newTime
   for child in gameObject.children:
     update(child, newTime)
@@ -55,23 +61,39 @@ proc loadModel*(gameObject: BaseGameObject, modelName: string) =
   gameObject.model = loadModel(resourcePath)
   gameObject.renderMode = Model
 
+proc rotateGameObject*(gameObject: BaseGameObject) =
+  gameObject.rotationAngle += gameObject.rotateSpeed * gameObject.deltaTime
+  gameObject.rotation.x = sin(gameObject.rotationAngle)
+  gameObject.rotation.y = cos(gameObject.rotationAngle)
+  gameObject.rotation.z = sin(gameObject.rotationAngle * 0.5)
+
 proc drawGameObject*(gameObject: BaseGameObject, camera: Camera3D, deltaTime: float32)  =
+  pushMatrix()
+  translatef(gameObject.position.x, gameObject.position.y, gameObject.position.z)
+  rotatef(gameObject.rotationAngle, gameObject.rotation.x, gameObject.rotation.y, gameObject.rotation.z)
+  scalef(gameObject.scale.x, gameObject.scale.y, gameObject.scale.z)
+
   case gameObject.renderMode:
     of None:
       discard
     of Cube:
-      drawCube(gameObject.position, gameObject.scale, gameObject.color)
+      drawCube(gameObject.position,gameObject.scale, gameObject.color)
+      drawCubeWires(gameObject.position, gameObject.scale, Maroon)
+
     of Sphere:
-      drawSphere(gameObject.position, gameObject.scale.x, gameObject.color)
+      drawSphere(Vector3(x: 0, y: 0, z: 0), 1.0, gameObject.color)
     of Cylinder:
-      drawCylinder(gameObject.position, gameObject.scale.x, gameObject.scale.y, gameObject.scale.z, 16, gameObject.color)
+      drawCylinder(Vector3(x: 0, y: 0, z: 0), 1.0, 1.0, 1.0, 16, gameObject.color)
     of Plane:
-      drawPlane(gameObject.position, Vector2(x: gameObject.scale.x, y: gameObject.scale.z), gameObject.color)
+      drawPlane(Vector3(x: 0, y: 0, z: 0), Vector2(x: 1, y: 1), gameObject.color)
     of Model:
       if gameObject.model.isModelReady:
-        drawModel(gameObject.model, gameObject.position, 1.0, gameObject.color)
-      # I don't know howto do this yet 
+        drawModel(gameObject.model, Vector3(x: 0, y: 0, z: 0), 1.0, gameObject.color)
 
+  popMatrix()
+
+  # Update rotation
+  gameObject.rotateGameObject()
 
   # Draw children
   for child in gameObject.children:
@@ -80,14 +102,4 @@ proc drawGameObject*(gameObject: BaseGameObject, camera: Camera3D, deltaTime: fl
 proc setRenderMode*(gameObject: BaseGameObject, mode: RenderMode) =
   gameObject.renderMode = mode
 
-proc rotateGameObject*(gameObject: BaseGameObject, axis: Vector3, speed: float32) =
-  let rotationAmount = speed * gameObject.deltaTime
-  
-  gameObject.rotation.x += axis.x * rotationAmount
-  gameObject.rotation.y += axis.y * rotationAmount
-  gameObject.rotation.z += axis.z * rotationAmount
 
-  # Normalize rotation angles
-  #gameObject.rotation.x = gameObject.rotation.x mod 360
-  #gameObject.rotation.y = gameObject.rotation.y mod 360
-  #gameObject.rotation.z = gameObject.rotation.z mod 360

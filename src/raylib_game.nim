@@ -1,241 +1,125 @@
-# ****************************************************************************************
-#
-#   raylib game template
-#
-#   <Game title>
-#   <Game description>
-#
-#   This game has been created using raylib (www.raylib.com)
-#   raylib is licensed under an unmodified zlib/libpng license (View raylib.h for details)
-#
-#   Copyright (c) 2021 Ramon Santamaria (@raysan5)
-#
-# ****************************************************************************************
-
-import
-  raylib, screens, screen_logo, screen_title, screen_options, screen_gameplay, screen_ending , gamestate
-
-# ----------------------------------------------------------------------------------------
-# Local Variables Definition (local to this module)
-# ----------------------------------------------------------------------------------------
+import raylib
 
 const
   screenWidth = 800
   screenHeight = 450
+  paddleWidth = 10
+  paddleHeight = 100
+  ballSize = 10
 
-# Required variables to manage screen transitions (fade-in, fade-out)
+type
+  Paddle = object
+    rect: Rectangle
+    speed: float32
+
+  Ball = object
+    position: Vector2
+    speed: Vector2
+    radius: float32
 
 var
-  transAlpha: float32 = 0
-  onTransition: bool = false
-  transFadeOut: bool = false
-  transFromScreen: GameScreen = Unknown
-  transToScreen: GameScreen = Unknown
-  lastTime: float32 = 0
-  localGameState: GameState
+  leftPaddle, rightPaddle: Paddle
+  ball: Ball
+  leftScore, rightScore: int
 
-# ----------------------------------------------------------------------------------------
-# Module specific Functions Definition
-# ----------------------------------------------------------------------------------------
+proc initGame() =
+  leftPaddle = Paddle(
+    rect: Rectangle(x: 50, y: screenHeight/2 - paddleHeight/2, width: paddleWidth, height: paddleHeight),
+    speed: 5
+  )
+  rightPaddle = Paddle(
+    rect: Rectangle(x: screenWidth - 50 - paddleWidth, y: screenHeight/2 - paddleHeight/2, width: paddleWidth, height: paddleHeight),
+    speed: 5
+  )
+  ball = Ball(
+    position: Vector2(x: screenWidth/2, y: screenHeight/2),
+    speed: Vector2(x: 5, y: 5),
+    radius: ballSize/2
+  )
 
-proc changeToScreen(screen: GameScreen) =
-  # Change to next screen, no transition
-  # Unload current screen
-  case currentScreen
-  of Logo:
-    unloadLogoScreen()
-  of Title:
-    unloadTitleScreen()
-  of Gameplay:
-    unloadGameplayScreen()
-  of Ending:
-    unloadEndingScreen()
-  else:
-    discard
-  # Init next screen
-  case screen
-  of Logo:
-    initLogoScreen()
-  of Title:
-    initTitleScreen()
-  of Gameplay:
-    initGameplayScreen()
-  of Ending:
-    initEndingScreen()
-  else:
-    discard
-  currentScreen = screen
+proc updateAI() =
+  let paddleCenter = rightPaddle.rect.y + paddleHeight / 2
+  let ballCenter = ball.position.y
 
-proc transitionToScreen(screen: GameScreen) =
-  # Request transition to next screen
-  onTransition = true
-  transFadeOut = false
-  transFromScreen = currentScreen
-  transToScreen = screen
-  transAlpha = 0
+  # Add some prediction based on ball's vertical speed
+  let predictedBallY = ballCenter + ball.speed.y * ((screenWidth - ball.position.x) / ball.speed.x.abs)
+  
+  # Move towards the predicted position
+  if predictedBallY < paddleCenter - 10:
+    rightPaddle.rect.y -= rightPaddle.speed
+  elif predictedBallY > paddleCenter + 10:
+    rightPaddle.rect.y += rightPaddle.speed
 
-proc updateTransition =
-  # Update transition effect (fade-in, fade-out)
-  if not transFadeOut:          # Transition fade out logic
-    transAlpha += 0.05
-    # NOTE: Due to float internal representation, condition jumps on 1.0f instead of 1.05f
-    # For that reason we compare against 1.01f, to avoid last frame loading stop
-    if transAlpha > 1.01'f32:
-      transAlpha = 1
-      # Unload current screen
-      case transFromScreen
-      of Logo:
-        unloadLogoScreen()
-      of Title:
-        unloadTitleScreen()
-      of Gameplay:
-        unloadGameplayScreen()
-      of Ending:
-        unloadEndingScreen()
-      else:
-        discard
-      # Init next screen
-      case transToScreen
-      of Logo:
-        initLogoScreen()
-      of Title:
-        initTitleScreen()
-      of Gameplay:
-        initGameplayScreen()
-      of Ending:
-        initEndingScreen()
-      else:
-        discard
-      currentScreen = transToScreen
-      # Activate fade out effect to next loaded screen
-      transFadeOut = true
-  else:
-    transAlpha -= 0.02
-    if transAlpha < -0.01'f32:
-      transAlpha = 0
-      transFadeOut = false
-      onTransition = false
-      transFromScreen = Unknown
-      transToScreen = Unknown
+  # Ensure the paddle stays within the screen bounds
+  rightPaddle.rect.y = clamp(rightPaddle.rect.y, 0, screenHeight - paddleHeight)
 
-proc drawTransition =
-  # Draw transition effect (full-screen rectangle)
-  drawRectangle(0, 0, getScreenWidth(), getScreenHeight(), fade(Black, transAlpha))
+proc updateGame() =
+  # Move left paddle (human player)
+  if isKeyDown(KeyboardKey.W) and leftPaddle.rect.y > 0:
+    leftPaddle.rect.y -= leftPaddle.speed
+  if isKeyDown(KeyboardKey.S) and leftPaddle.rect.y < screenHeight - paddleHeight:
+    leftPaddle.rect.y += leftPaddle.speed
+  
+  # Update AI-controlled right paddle
+  updateAI()
 
-proc updateDrawFrame {.cdecl.} =
-  let currentTime = getTime()
-  let deltaTime = currentTime - lastTime
-  lastTime = currentTime
+  # Move ball
+  ball.position.x += ball.speed.x
+  ball.position.y += ball.speed.y
 
-    # Update your tank spawner
+  # Ball collisions
+  if ball.position.y <= 0 or ball.position.y >= screenHeight:
+    ball.speed.y *= -1
 
-    # Rest of your game loop...
-  # Update and draw game frame
-  # Update
-  # --------------------------------------------------------------------------------------
-  updateMusicStream(music)
-  # NOTE: Music keeps playing between screens
-  if not onTransition:
-    case currentScreen
-    of Logo:
-      updateLogoScreen()
-      if finishLogoScreen() == 1:
-        transitionToScreen(Title)
-    of Title:
-      updateTitleScreen()
-      if finishTitleScreen() == 1:
-        transitionToScreen(Options)
-      elif finishTitleScreen() == 2:
-        transitionToScreen(Gameplay)
-    of Options:
-      updateOptionsScreen()
-      if finishOptionsScreen() == 1:
-        transitionToScreen(Title)
-    of Gameplay:
-      updateGameplayScreen()
-      if finishGameplayScreen() == 1:
-        transitionToScreen(Ending)
-    of Ending:
-      updateEndingScreen()
-      if finishEndingScreen() == 1:
-        transitionToScreen(Title)
-    else:
-      discard
-  else:
-    updateTransition()
-  # Update transition (fade-in, fade-out)
-  # --------------------------------------------------------------------------------------
-  # Draw
-  # --------------------------------------------------------------------------------------
+  # Paddle collisions
+  if checkCollisionCircleRec(ball.position, ball.radius, leftPaddle.rect) or
+     checkCollisionCircleRec(ball.position, ball.radius, rightPaddle.rect):
+    ball.speed.x *= -1.1  # Increase speed slightly on each hit
+
+  # Scoring
+  if ball.position.x <= 0:
+    rightScore += 1
+    ball.position = Vector2(x: screenWidth/2, y: screenHeight/2)
+  elif ball.position.x >= screenWidth:
+    leftScore += 1
+    ball.position = Vector2(x: screenWidth/2, y: screenHeight/2)
+
+proc drawGame() =
   beginDrawing()
-  clearBackground(RayWhite)
-  case currentScreen
-  of Logo:
-    drawLogoScreen()
-  of Title:
-    drawTitleScreen()
-  of Options:
-    drawOptionsScreen()
-  of Gameplay:
-    drawGameplayScreen(deltaTime,localGameState)
-  of Ending:
-    drawEndingScreen()
-  else:
-    discard
-  # Draw full screen rectangle in front of everything
-  if onTransition:
-    drawTransition()
+  clearBackground(BLACK)
+
+  # Draw paddles
+  drawRectangle(leftPaddle.rect, WHITE)
+  drawRectangle(rightPaddle.rect, WHITE)
+
+  # Draw ball
+  drawCircle(ball.position, ball.radius, WHITE)
+
+  # Draw scores
+  drawText($leftScore, screenWidth div 4, 20, 40, WHITE)
+  drawText($rightScore, 3 * screenWidth div 4, 20, 40, WHITE)
+
+  # Draw middle line
+  drawLine(screenWidth div 2, 0, screenWidth div 2, screenHeight, WHITE)
+
+  # Draw AI label
+  let xPos = int(rightPaddle.rect.x) - 30
+  let yPos = int(rightPaddle.rect.y) + int(paddleHeight/2) - 10
+  let textAI: cstring = "AI";
+  drawText(textAI, xPos.int32, yPos.int32, 20.int32, WHITE)
+
+  #drawText(textAI, xPos, yPos, 20, RED)
+
   endDrawing()
-  # --------------------------------------------------------------------------------------
 
-# ----------------------------------------------------------------------------------------
-# Main entry point
-# ----------------------------------------------------------------------------------------
+# Main game loop
+initWindow(screenWidth, screenHeight, "Raylib Nim Pong with AI")
+setTargetFPS(60)
 
-proc main =
-  # Initialization
-  # --------------------------------------------------------------------------------------
-  initWindow(screenWidth, screenHeight, "raylib game template")
-  initAudioDevice() # Initialize audio device
-  try:
-    # Load global data (assets that must be available in all screens, i.e. font)
-    font = loadFont("src/resources/mecha.png")
-    music = loadMusicStream("src/resources/ambient.ogg")
-    fxCoin = loadSound("src/resources/coin.wav")
-    setMusicVolume(music, 1)
-    playMusicStream(music)
-    # Setup and init first screen
-    currentScreen = Logo
-    initLogoScreen()
-    when defined(emscripten):
-      emscriptenSetMainLoop(updateDrawFrame, 60, 1)
-    else:
-      setTargetFPS(60) # Set our game to run at 60 frames-per-second
-      # ----------------------------------------------------------------------------------
-      # Main game loop
-      while not windowShouldClose(): # Detect window close button or ESC key
-        updateDrawFrame()
-    # De-Initialization
-    # ------------------------------------------------------------------------------------
-    # Unload current screen data before closing
-    case currentScreen
-    of Logo:
-      unloadLogoScreen()
-    of Title:
-      unloadTitleScreen()
-    of Gameplay:
-      unloadGameplayScreen()
-    of Ending:
-      unloadEndingScreen()
-    else:
-      discard
-    # Unload global data loaded
-    reset(font)
-    reset(music)
-    reset(fxCoin)
-  finally:
-    closeAudioDevice() # Close audio context
-    closeWindow() # Close window and OpenGL context
-  # --------------------------------------------------------------------------------------
+initGame()
 
-main()
+while not windowShouldClose():
+  updateGame()
+  drawGame()
+
+closeWindow()
