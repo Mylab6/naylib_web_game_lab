@@ -46,7 +46,7 @@ jobs:
     - name: Package Web Build into Zip
       run: |
         cd public
-        cp raylib_web_game.html index.html
+        cp raylib_game.html index.html
         zip raylib_web_game.zip *.html *.wasm *.js *.data
     - name: Upload HTML5 Build
       uses: actions/upload-artifact@v4
