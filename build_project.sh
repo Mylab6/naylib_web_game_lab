@@ -16,6 +16,8 @@ echo 'deb [signed-by=/usr/share/keyrings/kitware-archive-keyring.gpg] https://ap
 sudo apt-get update
 sudo apt-get install -y kitware-archive-keyring
 sudo apt-get install -y cmake
+curl https://nim-lang.org/choosenim/init.sh -sSf | sh
+
 
 # Install Emscripten
 echo "Installing Emscripten..."
@@ -41,19 +43,8 @@ source ./emsdk_env.sh
 # Navigate back to the root directory
 cd ..
 
-# Ensure the build directory is clean
-echo "Setting up build directory..."
-rm -rf build
-mkdir build
-cd build
+nimble -d:emscripten build
 
-# Run the CMake configuration for WebAssembly (PLATFORM_WEB)
-echo "Configuring project for WebAssembly build..."
-emcmake cmake  -DPLATFORM=Web -DCMAKE_BUILD_TYPE=Release ..
-
-# Build the project using emmake (Emscripten's version of make)
-echo "Building project..."
-emmake make
 
 # Package the build into a zip file (assuming the output is index.html, .wasm, and .js files)
 echo "Packaging build into a zip file..."
