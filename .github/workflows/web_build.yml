@@ -64,7 +64,7 @@ jobs:
         export EMSDK_NODE=$EMSDK_NODE
     - name: Build Raylib WebAssembly Game   
       run: |
-          nimble  setupBuildEnv -Y
+           nimble -d:emscripten build
 
     - name: Package Web Build into Zip
       run: |
