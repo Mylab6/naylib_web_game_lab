@@ -8,6 +8,8 @@ on:
 
 jobs:
   test-linux:
+    environment: web
+
     runs-on: ubuntu-latest
     env:
       JAVA_VERSION: "21"
