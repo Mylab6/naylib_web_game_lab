@@ -66,7 +66,7 @@ proc drawGameplayScreen*(deltaTime:float) =
 
   beginMode3D(camera)
   #Add a spawner 
-  var testGameObject =  BaseGameObject()
+  var testGameObject =  TankSpawner()
   testGameObject.position = Vector3(x: 0, y: 0, z: 0)
   testGameObject.color = Blue
   testGameObject.scale = Vector3(x: 2.0, y: 2.0, z: 2.0)
