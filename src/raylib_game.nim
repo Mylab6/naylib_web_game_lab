@@ -1,89 +1,87 @@
 import raylib
-import moving_cube
 import random
-import renderableobject
 
 const
   screenWidth = 800
   screenHeight = 450
-var camera: Camera 
+  playerSize = 20
+  blockSize = 30
+  blockSpeed = 5
 
-var cubes: seq[RenderableObject]
-proc addCube(): RenderableObject =
+type
+  Player = object
+    x, y: float32
+
+  Block = object
+    x, y: float32
+    active: bool
+
+var
+  player: Player
+  blocks: array[2, Block]
+  score: int
+
+proc initGame() =
   randomize()
- # let randomInt = rand(100)
 
+  player.x = float32(screenWidth div 2)
+  player.y = float32(screenHeight - playerSize * 2)
 
-  var color = Color(
-    r: uint8(rand(256)),
-    g: uint8(rand(256)),
-    b: uint8(rand(256)),
-    a: 255
-  )
-  var initialPos = Vector3(
-    x: rand(-10..10).toFloat(),
-    y:0,
-    z: rand(-10..10).toFloat()
-  )
-  
-  let cube = newRenderableObject(
-    initialPos = initialPos,
-    size = Vector3(x: 2, y: 2, z: 2),
-    color = color,
-    wireColor = Maroon,
-    speed = rand(5.1..5.62), 
-    rotSpeed = 0.05
-  )
-  return cube
-proc updateDrawFrame {.cdecl.} =
+  for i in 0..1:
+    blocks[i].x = float32(rand(screenWidth - blockSize))
+    blocks[i].y = float32(-blockSize * (i + 1) * 2)
+    blocks[i].active = true
 
-    
+  score = 0
+
+proc updateGame() =
+  # Move player
+  if isKeyDown(KeyboardKey.LEFT): player.x -= 5
+  if isKeyDown(KeyboardKey.RIGHT): player.x += 5
+
+  # Keep player within screen bounds
+  player.x = clamp(player.x, 0, float32(screenWidth - playerSize))
+
+  # Update blocks
+  for i in 0..1:
+    if blocks[i].active:
+      blocks[i].y += blockSpeed
+      if blocks[i].y > screenHeight:
+        blocks[i].y = float32(-blockSize)
+        blocks[i].x = float32(rand(screenWidth - blockSize))
+        inc(score)
+
+    # Check collision
+    if checkCollisionRecs(
+      Rectangle(x: player.x, y: player.y, width: float32(playerSize), height: float32(playerSize)),
+      Rectangle(x: blocks[i].x, y: blocks[i].y, width: float32(blockSize), height: float32(blockSize))
+    ):
+      initGame()  # Reset game on collision
+
+proc drawGame() =
   beginDrawing()
   clearBackground(RayWhite)
-      
-  beginMode3D(camera)
-  for cube in cubes:
-    cube.update( getFrameTime())
-    #cube.update()
-    cube.draw()
-    #cube.drawTargetPoints()
-  drawGrid(10, 1.0)
-  camera.target = cubes[0].position
-  endMode3D()
-      
-  drawText("Cube moving and rotating", 10, 40, 20, DarkGray)
-  drawFPS(10, 10)
-      
+
+  # Draw player
+  drawRectangle(int32(player.x), int32(player.y), playerSize, playerSize, Blue)
+
+  # Draw blocks
+  for blk in blocks:
+    if blk.active:
+      drawRectangle(int32(blk.x), int32(blk.y), blockSize, blockSize, Red)
+
+  # Draw score
+  drawText(cstring("Score: " & $score), 10, 10, 20, DarkGray)
+
   endDrawing()
 
-proc main() =
+initWindow(screenWidth, screenHeight, "Block Dodge Game")
+setTargetFPS(60)
 
-  initWindow(screenWidth, screenHeight, "Raylib Nim - Moving Rotating Cube")
-  camera = Camera()
-  cubes = @[]
-  for i in 0..<10:
-    cubes.add(addCube())
-  let ball:RenderableObject = addCube()
-  ball.primitiveType = ptSphere
-  cubes[0].addChild(ball)
-  camera.position = Vector3(x: 0, y: 20, z: -6)
-  camera.target = Vector3(x: 0, y: 0, z: 0)
-  camera.up = Vector3(x: 0, y: 0, z: -1)
-  camera.fovy = 45
-  camera.projection = CameraProjection.Perspective
-  defer: closeWindow()
-  when defined(emscripten):
-      emscriptenSetMainLoop(updateDrawFrame, 60, 1)
-  else:
-      setTargetFPS(60) # Set our game to run at 60 frames-per-second
-      # ----------------------------------------------------------------------------------
-      # Main game loop
-      while not windowShouldClose(): # Detect window close button or ESC key
-        updateDrawFrame()
-    #setTargetFPS(60)
+initGame()
 
+while not windowShouldClose():
+  updateGame()
+  drawGame()
 
-
-
-when isMainModule:
-  main()
+closeWindow()

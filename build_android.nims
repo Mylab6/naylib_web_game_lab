@@ -54,7 +54,7 @@ const
 # Android app configuration variables
 const
   AppLabelName = "rGame"
-  AppCompanyName = "raylib"
+  AppCompanyName = "TwoDLabs"
   AppProductName = "rgame"
   AppVersionCode = 1
   AppVersionName = "1.0"

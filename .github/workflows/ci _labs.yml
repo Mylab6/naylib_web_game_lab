@@ -1,0 +1,39 @@
+name: Android Labs
+
+on:
+  push:
+    branches:
+      - '*'         # Matches every branch
+      - '!master' 
+
+jobs:
+  test-linux:
+    environment: web
+
+    runs-on: ubuntu-latest
+    env:
+      JAVA_VERSION: "21"
+    steps:
+    - uses: actions/checkout@v4
+    - uses: jiro4989/setup-nim-action@v2
+      with:
+        nim-version: 'stable'
+        repo-token: ${{ secrets.GITHUB_TOKEN }}
+    - name: Install dependencies
+      run: |
+        sudo apt install -y openjdk-${{ env.JAVA_VERSION }}-jdk wget unzip
+        JAVA_HOME=/usr/lib/jvm/java-${{ env.JAVA_VERSION }}-openjdk-amd64
+        echo "JAVA_HOME=$JAVA_HOME" >> $GITHUB_ENV
+        echo "${JAVA_HOME}/bin" >> $GITHUB_PATH
+    - name: Set up Android SDK/NDK
+      run: |
+        nimble -d:GitHubCI setupBuildEnv -Y
+    - name: Run tests
+      run: |
+        nimble -d:GitHubCI testCI
+    - name: Upload APK artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: raylib-game-apk
+        path: ${{ github.workspace }}/raylib_game.apk
+        if-no-files-found: error
