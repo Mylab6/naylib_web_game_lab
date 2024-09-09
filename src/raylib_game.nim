@@ -62,6 +62,9 @@ proc main() =
   cubes = @[]
   for i in 0..<10:
     cubes.add(addCube())
+  let ball:RenderableObject = addCube()
+  ball.primitiveType = ptSphere
+  cubes[0].addChild(ball)
   camera.position = Vector3(x: 0, y: 20, z: -2)
   camera.target = Vector3(x: 0, y: 0, z: 0)
   camera.up = Vector3(x: 0, y: 0, z: -1)
