@@ -35,7 +35,7 @@ proc addCube(): MovingCube =
     rotSpeed = 0.05
   )
   return cube
-proc gameLoop() =
+proc updateDrawFrame {.cdecl.} =
 
     
   beginDrawing()
@@ -68,13 +68,13 @@ proc main() =
   camera.projection = CameraProjection.Perspective
   defer: closeWindow()
   when defined(emscripten):
-      emscriptenSetMainLoop(gameLoop, 60, 1)
+      emscriptenSetMainLoop(updateDrawFrame, 60, 1)
   else:
       setTargetFPS(60) # Set our game to run at 60 frames-per-second
       # ----------------------------------------------------------------------------------
       # Main game loop
       while not windowShouldClose(): # Detect window close button or ESC key
-        gameLoop()
+        updateDrawFrame()
     #setTargetFPS(60)
 
 
