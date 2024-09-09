@@ -8,6 +8,8 @@ on:
 
 jobs:
   test-linux:
+    environment: web
+
     runs-on: ubuntu-latest
     env:
       JAVA_VERSION: "21"
@@ -35,3 +37,17 @@ jobs:
         name: raylib-game-apk
         path: ${{ github.workspace }}/raylib_game.apk
         if-no-files-found: error
+    - name: Install Butler
+      run: |
+        curl -L -o butler.zip https://broth.itch.ovh/butler/linux-amd64/LATEST/archive/default
+        unzip butler.zip
+        chmod +x butler
+        sudo mv butler /usr/local/bin
+    - name: Login to Butler
+      run: butler login
+      env:
+        BUTLER_API_KEY: ${{ secrets.BUTLER }}
+    - name: Push Android build to Itch.io
+      run: butler push ${{ github.workspace }}/raylib_game.apk ${{ secrets.ITCH_URL }}:android
+      env:
+        BUTLER_API_KEY: ${{ secrets.BUTLER }}

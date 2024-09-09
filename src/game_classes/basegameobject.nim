@@ -1,6 +1,7 @@
-import raylib, rlgl
+import raylib , raymath, std/math, rlgl
 import os
 import std/logging
+import math
 
 var logger = newConsoleLogger()
 
@@ -17,10 +18,12 @@ type
     objectType*: string
     deltaTime*: float
     children*: seq[BaseGameObject]
+    mesh*: Mesh
     model*: Model
     renderMode*: RenderMode
     rotateSpeed*: float32
-    rotationAngle*: float
+    rotationAngle*: float  # Increase rotation angle (in degrees)
+
 
 proc newBaseGameObject*(
   position: Vector3 = Vector3(x: 0, y: 0, z: 0),
@@ -42,7 +45,7 @@ proc newBaseGameObject*(
     renderMode: renderMode
   )
 
-proc update(gameObject: BaseGameObject, newTime: float) =
+proc update*(gameObject: BaseGameObject, newTime: float) =
   gameObject.deltaTime = newTime
   for child in gameObject.children:
     update(child, newTime)
@@ -55,36 +58,42 @@ proc removeChild*(parent: BaseGameObject, child: BaseGameObject) =
 
 proc loadModel*(gameObject: BaseGameObject, modelName: string) =
   let resourcePath = joinPath("src/resources", "models", modelName)
-  if fileExists(resourcePath):
-    gameObject.model = loadModel(resourcePath)
-    gameObject.renderMode = Model
-  else:
-    logger.log(lvlError, "Model file not found: " & resourcePath)
+  gameObject.model = loadModel(resourcePath)
+  gameObject.renderMode = Model
+
+proc rotateGameObject*(gameObject: BaseGameObject) =
+  gameObject.rotationAngle += gameObject.rotateSpeed * gameObject.deltaTime
+  gameObject.rotation.x = sin(gameObject.rotationAngle)
+  gameObject.rotation.y = cos(gameObject.rotationAngle)
+  gameObject.rotation.z = sin(gameObject.rotationAngle * 0.5)
 
 proc drawGameObject*(gameObject: BaseGameObject, camera: Camera3D, deltaTime: float32)  =
   pushMatrix()
   translatef(gameObject.position.x, gameObject.position.y, gameObject.position.z)
-  rotatef(gameObject.rotation.x, 1, 0, 0)
-  rotatef(gameObject.rotation.y, 0, 1, 0)
-  rotatef(gameObject.rotation.z, 0, 0, 1)
+  rotatef(gameObject.rotationAngle, gameObject.rotation.x, gameObject.rotation.y, gameObject.rotation.z)
   scalef(gameObject.scale.x, gameObject.scale.y, gameObject.scale.z)
 
   case gameObject.renderMode:
     of None:
       discard
     of Cube:
-      drawCube(Vector3(x: 0, y: 0, z: 0), 1, 1, 1, gameObject.color)
+      drawCube(gameObject.position,gameObject.scale, gameObject.color)
+      drawCubeWires(gameObject.position, gameObject.scale, Maroon)
+
     of Sphere:
-      drawSphere(Vector3(x: 0, y: 0, z: 0), 0.5, gameObject.color)
+      drawSphere(Vector3(x: 0, y: 0, z: 0), 1.0, gameObject.color)
     of Cylinder:
-      drawCylinder(Vector3(x: 0, y: 0, z: 0), 0.5, 0.5, 1, 16, gameObject.color)
+      drawCylinder(Vector3(x: 0, y: 0, z: 0), 1.0, 1.0, 1.0, 16, gameObject.color)
     of Plane:
       drawPlane(Vector3(x: 0, y: 0, z: 0), Vector2(x: 1, y: 1), gameObject.color)
     of Model:
-      if not gameObject.model.isModelReady:
+      if gameObject.model.isModelReady:
         drawModel(gameObject.model, Vector3(x: 0, y: 0, z: 0), 1.0, gameObject.color)
 
   popMatrix()
+
+  # Update rotation
+  gameObject.rotateGameObject()
 
   # Draw children
   for child in gameObject.children:
@@ -93,10 +102,4 @@ proc drawGameObject*(gameObject: BaseGameObject, camera: Camera3D, deltaTime: fl
 proc setRenderMode*(gameObject: BaseGameObject, mode: RenderMode) =
   gameObject.renderMode = mode
 
-proc rotateGameObject*(gameObject: BaseGameObject) =
-  gameObject.rotateSpeed = 1
-  gameObject.rotationAngle += gameObject.rotateSpeed
-  logger.log(lvlInfo, "Rotation Angle: " & $gameObject.rotationAngle)
-  gameObject.rotation.x += gameObject.rotateSpeed
-  gameObject.rotation.y += gameObject.rotateSpeed
-  gameObject.rotation.z += gameObject.rotateSpeed
+
