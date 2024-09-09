@@ -6,7 +6,6 @@ on:
   push:
     branches:
       - main
-      - Start_Building_Game
 
 jobs:
   build:

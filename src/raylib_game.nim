@@ -1,15 +1,15 @@
 import raylib
 import moving_cube
 import random
-
+import renderableobject
 
 const
   screenWidth = 800
   screenHeight = 450
 var camera: Camera 
 
-var cubes: seq[MovingCube]
-proc addCube(): MovingCube =
+var cubes: seq[RenderableObject]
+proc addCube(): RenderableObject =
   randomize()
  # let randomInt = rand(100)
 
@@ -26,12 +26,12 @@ proc addCube(): MovingCube =
     z: rand(-10..10).toFloat()
   )
   
-  let cube = newMovingCube(
+  let cube = newRenderableObject(
     initialPos = initialPos,
     size = Vector3(x: 2, y: 2, z: 2),
     color = color,
     wireColor = Maroon,
-    speed = rand(0.01..0.02), 
+    speed = rand(0.1..5.62), 
     rotSpeed = 0.05
   )
   return cube
@@ -43,9 +43,10 @@ proc updateDrawFrame {.cdecl.} =
       
   beginMode3D(camera)
   for cube in cubes:
-    cube.update()
+    cube.update( getFrameTime())
+    #cube.update()
     cube.draw()
-    cube.drawTargetPoints()
+    #cube.drawTargetPoints()
   drawGrid(10, 1.0)
   endMode3D()
       
@@ -61,9 +62,9 @@ proc main() =
   cubes = @[]
   for i in 0..<10:
     cubes.add(addCube())
-  camera.position = Vector3(x: 10, y: 10, z: 10)
+  camera.position = Vector3(x: 0, y: 20, z: -2)
   camera.target = Vector3(x: 0, y: 0, z: 0)
-  camera.up = Vector3(x: 0, y: 1, z: 0)
+  camera.up = Vector3(x: 0, y: 0, z: -1)
   camera.fovy = 45
   camera.projection = CameraProjection.Perspective
   defer: closeWindow()
