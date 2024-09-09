@@ -31,7 +31,7 @@ proc addCube(): RenderableObject =
     size = Vector3(x: 2, y: 2, z: 2),
     color = color,
     wireColor = Maroon,
-    speed = rand(0.1..5.62), 
+    speed = rand(5.1..5.62), 
     rotSpeed = 0.05
   )
   return cube
@@ -48,6 +48,7 @@ proc updateDrawFrame {.cdecl.} =
     cube.draw()
     #cube.drawTargetPoints()
   drawGrid(10, 1.0)
+  camera.target = cubes[0].position
   endMode3D()
       
   drawText("Cube moving and rotating", 10, 40, 20, DarkGray)

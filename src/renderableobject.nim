@@ -55,10 +55,10 @@ proc update*(self: RenderableObject, deltaTime: float32) =
   self.rotation.y += self.rotationSpeed * deltaTime
 
   # Simple bouncing logic
-  if abs(self.position.x) > 5:  # Assuming a boundary of -5 to 5
-    self.moveDirection.x *= -1
-  if abs(self.position.z) > 5:  # Assuming a boundary of -5 to 5
-    self.moveDirection.z *= -1
+#  if abs(self.position.x) > 5:  # Assuming a boundary of -5 to 5
+ #   self.moveDirection.x *= -1
+ # if abs(self.position.z) > 5:  # Assuming a boundary of -5 to 5
+  #  self.moveDirection.z *= -1
 
   # Update children
   for child in self.children:
