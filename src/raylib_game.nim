@@ -1,87 +1,108 @@
 import raylib
-import random
+import naylibgui
+import block_dodge
+import pong
 
 const
   screenWidth = 800
   screenHeight = 450
-  playerSize = 20
-  blockSize = 30
-  blockSpeed = 5
 
 type
-  Player = object
-    x, y: float32
-
-  Block = object
-    x, y: float32
-    active: bool
+  GameState = enum
+    gsMenu, gsBlockDodge, gsPong
 
 var
-  player: Player
-  blocks: array[2, Block]
-  score: int
+  gameState: GameState = gsMenu
+  currentGame: int32 = 0
+  dropdownActive: bool = false
+  showExitDialog: bool = false
 
-proc initGame() =
-  randomize()
+proc drawMenu() =
+  clearBackground(Green)
+  
+  # Title
+  guiSetStyle(LABEL, TEXT_ALIGNMENT, TEXT_ALIGN_CENTER)
+  guiLabel(Rectangle(x: 0, y: 50, width: float32(screenWidth), height: 40), "Mini-Games Collection")
 
-  player.x = float32(screenWidth div 2)
-  player.y = float32(screenHeight - playerSize * 2)
+  # Game selection dropdown
+  guiSetStyle(DROPDOWNBOX, TEXT_ALIGNMENT, TEXT_ALIGN_LEFT)
+  if guiDropdownBox(
+    Rectangle(x: float32(screenWidth)/2 - 100, y: 150, width: 200, height: 30),
+    "Select a game;Block Dodge;Pong",
+    currentGame,
+    dropdownActive
+  ) != 0:
+    dropdownActive = not dropdownActive
 
-  for i in 0..1:
-    blocks[i].x = float32(rand(screenWidth - blockSize))
-    blocks[i].y = float32(-blockSize * (i + 1) * 2)
-    blocks[i].active = true
+  # Start game button
+  if guiButton(Rectangle(x: float32(screenWidth)/2 - 60, y: 200, width: 120, height: 30), "Start Game") != 0:
+    case currentGame:
+      of 1:
+        gameState = gsBlockDodge
+        initBlockDodge()
+      of 2:
+        gameState = gsPong
+        initPong()
+      else:
+        discard
 
-  score = 0
+  # Exit button
+  if guiButton(Rectangle(x: float32(screenWidth)/2 - 60, y: 250, width: 120, height: 30), "Exit") != 0:
+    showExitDialog = true
 
-proc updateGame() =
-  # Move player
-  if isKeyDown(KeyboardKey.LEFT): player.x -= 5
-  if isKeyDown(KeyboardKey.RIGHT): player.x += 5
+  # Footer
+  guiSetStyle(LABEL, TEXT_ALIGNMENT, TEXT_ALIGN_CENTER)
+  guiLabel(Rectangle(x: 0, y: float32(screenHeight) - 30, width: float32(screenWidth), height: 30), "© 2023 Your Game Studio")
 
-  # Keep player within screen bounds
-  player.x = clamp(player.x, 0, float32(screenWidth - playerSize))
+proc drawExitDialog() =
+  drawRectangle(0, 0, screenWidth, screenHeight, fade(RAYWHITE, 0.8))
+  let result = guiMessageBox(
+    Rectangle(x: float32(screenWidth)/2 - 125, y: float32(screenHeight)/2 - 50, width: 250, height: 100),
+    guiIconText(ICON_EXIT, "Exit Game"),
+    "Are you sure you want to exit?",
+    "Yes;No"
+  )
 
-  # Update blocks
-  for i in 0..1:
-    if blocks[i].active:
-      blocks[i].y += blockSpeed
-      if blocks[i].y > screenHeight:
-        blocks[i].y = float32(-blockSize)
-        blocks[i].x = float32(rand(screenWidth - blockSize))
-        inc(score)
+  if result == 0 or result == 2:
+    showExitDialog = false
+  elif result == 1:
+    closeWindow()
 
-    # Check collision
-    if checkCollisionRecs(
-      Rectangle(x: player.x, y: player.y, width: float32(playerSize), height: float32(playerSize)),
-      Rectangle(x: blocks[i].x, y: blocks[i].y, width: float32(blockSize), height: float32(blockSize))
-    ):
-      initGame()  # Reset game on collision
+proc main() =
+  initWindow(screenWidth, screenHeight, "Mini-Games Collection")
+  setTargetFPS(60)
 
-proc drawGame() =
-  beginDrawing()
-  clearBackground(RayWhite)
+  # Load custom font (optional)
+  # let customFont = loadFont("path/to/your/font.ttf")
+  # guiSetFont(customFont)
 
-  # Draw player
-  drawRectangle(int32(player.x), int32(player.y), playerSize, playerSize, Blue)
+  # Load custom style (optional)
+  # guiLoadStyleDefault()
 
-  # Draw blocks
-  for blk in blocks:
-    if blk.active:
-      drawRectangle(int32(blk.x), int32(blk.y), blockSize, blockSize, Red)
+  while not windowShouldClose():
+    beginDrawing()
 
-  # Draw score
-  drawText(cstring("Score: " & $score), 10, 10, 20, DarkGray)
+    case gameState:
+      of gsMenu:
+        drawMenu()
+        if showExitDialog:
+          drawExitDialog()
+      of gsBlockDodge:
+        if updateBlockDodge():
+          gameState = gsMenu
+        drawBlockDodge()
+      of gsPong:
+        if updatePong():
+          gameState = gsMenu
+        drawPong()
 
-  endDrawing()
+    # Back to menu button (when in a game)
+    if gameState != gsMenu:
+      if guiButton(Rectangle(x: 10, y: 10, width: 100, height: 30), "Back to Menu") != 0:
+        gameState = gsMenu
 
-initWindow(screenWidth, screenHeight, "Block Dodge Game")
-setTargetFPS(60)
+    endDrawing()
 
-initGame()
+  closeWindow()
 
-while not windowShouldClose():
-  updateGame()
-  drawGame()
-
-closeWindow()
+main()

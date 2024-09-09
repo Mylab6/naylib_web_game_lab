@@ -7,6 +7,8 @@ srcDir        = "src"
 
 # Dependencies
 requires "naylib"
+requires "https://github.com/ryback08/naylibgui"
+
 
 import std/distros
 if detectOs(Windows):
