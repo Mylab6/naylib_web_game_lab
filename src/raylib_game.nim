@@ -6,6 +6,9 @@ import random
 const
   screenWidth = 800
   screenHeight = 450
+var camera: Camera 
+
+var cubes: seq[MovingCube]
 proc addCube(): MovingCube =
   randomize()
  # let randomInt = rand(100)
@@ -28,48 +31,54 @@ proc addCube(): MovingCube =
     size = Vector3(x: 2, y: 2, z: 2),
     color = color,
     wireColor = Maroon,
-    speed = 0.05,
+    speed = rand(0.01..0.02), 
     rotSpeed = 0.05
   )
   return cube
-proc main() =
-  initWindow(screenWidth, screenHeight, "Raylib Nim - Moving Rotating Cube")
-  defer: closeWindow()
+proc gameLoop() =
 
-  var camera = Camera()
+    
+  beginDrawing()
+  clearBackground(RayWhite)
+      
+  beginMode3D(camera)
+  for cube in cubes:
+    cube.update()
+    cube.draw()
+    cube.drawTargetPoints()
+  drawGrid(10, 1.0)
+  endMode3D()
+      
+  drawText("Cube moving and rotating", 10, 40, 20, DarkGray)
+  drawFPS(10, 10)
+      
+  endDrawing()
+
+proc main() =
+
+  initWindow(screenWidth, screenHeight, "Raylib Nim - Moving Rotating Cube")
+  camera = Camera()
+  cubes = @[]
+  for i in 0..<10:
+    cubes.add(addCube())
   camera.position = Vector3(x: 10, y: 10, z: 10)
   camera.target = Vector3(x: 0, y: 0, z: 0)
   camera.up = Vector3(x: 0, y: 1, z: 0)
   camera.fovy = 45
   camera.projection = CameraProjection.Perspective
-  #Create an array for 20 cubes 
-  var cubes: seq[MovingCube] = @[]
-  for i in 0 .. 3000:
-    cubes.add(addCube())
- 
+  defer: closeWindow()
+  when defined(emscripten):
+      emscriptenSetMainLoop(gameLoop, 60, 1)
+  else:
+      setTargetFPS(60) # Set our game to run at 60 frames-per-second
+      # ----------------------------------------------------------------------------------
+      # Main game loop
+      while not windowShouldClose(): # Detect window close button or ESC key
+        gameLoop()
+    #setTargetFPS(60)
 
-  setTargetFPS(60)
 
-  while not windowShouldClose():
-#    cube.update()
 
-    beginDrawing()
-    clearBackground(RayWhite)
-    
-    beginMode3D(camera)
- #   cube.draw()
-  #  cube.drawTargetPoints()
-    for cube in cubes:
-      cube.update()
-      cube.draw()
-      cube.drawTargetPoints()
-    drawGrid(10, 1.0)
-    endMode3D()
-    
-    drawText("Cube moving and rotating", 10, 40, 20, DarkGray)
-    drawFPS(10, 10)
-    
-    endDrawing()
 
 when isMainModule:
   main()
